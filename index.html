@@ -215,7 +215,7 @@
     line-height: 1.7;
     color: #C9C9DA;
     padding: 14px 16px;
-    height: 250px;
+    height: 220px;
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-word;
@@ -232,7 +232,21 @@
     letter-spacing: .08em;
     text-align: center;
   }
-  #enterTaskBtn { display: none; }
+  .term-btn {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-top: 10px;
+    padding: 9px 18px;
+    background: transparent;
+    color: var(--arc-green);
+    border: 1px solid var(--arc-green);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .term-btn:hover, .term-btn:focus-visible { background: rgba(46,204,64,.12); outline: none; }
 
   /* ============ task scene ============ */
   #task { gap: 26px; }
@@ -519,6 +533,7 @@
     <span class="link">⇄</span>
     <div class="tier t-db" id="tierDb"><div class="t-name">DATABASE</div><div class="t-sub">what you keep</div></div>
   </div>
+  <p class="mash-hint" id="mashHint">type anything — mash your keyboard (or tap the terminal). your hands remember</p>
   <div class="buildrow">
     <div class="terminal" id="terminal">
       <div class="term-bar"><i></i><i></i><i></i><span>caroline@lab: ~/ARC-behavioral</span></div>
@@ -529,8 +544,6 @@
       <div class="prev-body" id="prevBody"></div>
     </div>
   </div>
-  <p class="mash-hint" id="mashHint">type anything — mash your keyboard (or tap the terminal). your hands remember</p>
-  <button class="btn primary" id="enterTaskBtn">Enter the task</button>
 </section>
 
 <!-- ================= SCENE 3 : THE TASK ================= -->
@@ -847,12 +860,12 @@ document.getElementById("beginBtn").addEventListener("click", () => {
   show("build");
   startBuild();
 });
-document.getElementById("enterTaskBtn").addEventListener("click", () => {
+function enterTask() {
   show("task");
   startTime = Date.now();
   drawTries();
   recordPoint({ type: "start" });   // t=0, empty grid — the start of her trajectory
-});
+}
 
 /* ============================================================
    Step 0 — build the stack, hackertyper style.
@@ -1151,7 +1164,13 @@ function deploySequence() {
         termAppend("log", "\n✓ all 260 subjects complete — data collected, analyses run, paper written");
         termAppend("sys", "\n\nwaiting for subject #261 ");
         termAppend("caret", "");
-        document.getElementById("enterTaskBtn").style.display = "inline-block";
+        termAppend("", "\n");
+        const b = document.createElement("button");
+        b.className = "term-btn";
+        b.textContent = "Enter the task ▸";
+        b.addEventListener("click", enterTask);
+        term.appendChild(b);
+        term.scrollTop = term.scrollHeight;
       }
     }, 90);
   })();
@@ -1169,6 +1188,7 @@ window.addEventListener("keydown", e => {
   typeChunk();
 });
 document.getElementById("terminal").addEventListener("pointerdown", e => {
+  if (e.target.closest(".term-btn")) return;
   e.preventDefault();
   typeChunk();
 });
