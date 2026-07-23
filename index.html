@@ -439,7 +439,8 @@
   /* her trajectory figure — deliberately matplotlib */
   #win .fig { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   #win .fig .plot {
-    background: #fff;
+    background: #050509;
+    border: 1px solid var(--line);
     border-radius: 4px;
     padding: 6px;
     max-width: min(460px, 92vw);
@@ -1289,22 +1290,22 @@ function renderTrajectory() {
   const y0 = Math.max(0, Math.floor((sMin - 0.02) * 10) / 10);
   const X = t => m.l + (t / tMax) * (Wp - m.l - m.r);
   const Y = s => m.t + (1 - (s - y0) / (1 - y0)) * (Hp - m.t - m.b);
-  const ink = "#262626", grey = "#8a8a8a";
+  const ink = "#B9B9C8", axis = "#55556A", grey = "#8A8A9A";
 
   let svg = `<svg class="plot" viewBox="0 0 ${Wp} ${Hp}" width="${Wp}" role="img" aria-label="Line chart: your similarity to the solution rising to 1.0 over time">`;
   /* axes */
-  svg += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${Hp - m.b}" stroke="${ink}" stroke-width="1"/>`;
-  svg += `<line x1="${m.l}" y1="${Hp - m.b}" x2="${Wp - m.r}" y2="${Hp - m.b}" stroke="${ink}" stroke-width="1"/>`;
+  svg += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${Hp - m.b}" stroke="${axis}" stroke-width="1"/>`;
+  svg += `<line x1="${m.l}" y1="${Hp - m.b}" x2="${Wp - m.r}" y2="${Hp - m.b}" stroke="${axis}" stroke-width="1"/>`;
   /* y ticks */
   for (let s = y0; s <= 1.001; s += 0.1) {
     const y = Y(s);
-    svg += `<line x1="${m.l - 4}" y1="${y}" x2="${m.l}" y2="${y}" stroke="${ink}"/>`;
+    svg += `<line x1="${m.l - 4}" y1="${y}" x2="${m.l}" y2="${y}" stroke="${axis}"/>`;
     svg += `<text x="${m.l - 8}" y="${y + 3}" font-size="9" fill="${ink}" text-anchor="end" font-family="sans-serif">${s.toFixed(1)}</text>`;
   }
   /* x ticks */
   [0, .25, .5, .75, 1].forEach(f => {
     const x = X(tMax * f);
-    svg += `<line x1="${x}" y1="${Hp - m.b}" x2="${x}" y2="${Hp - m.b + 4}" stroke="${ink}"/>`;
+    svg += `<line x1="${x}" y1="${Hp - m.b}" x2="${x}" y2="${Hp - m.b + 4}" stroke="${axis}"/>`;
     svg += `<text x="${x}" y="${Hp - m.b + 15}" font-size="9" fill="${ink}" text-anchor="middle" font-family="sans-serif">${Math.round(tMax * f)}</text>`;
   });
   /* labels + title, like the paper's */
@@ -1313,12 +1314,12 @@ function renderTrajectory() {
   svg += `<text x="${(m.l + Wp - m.r) / 2}" y="${m.t - 12}" font-size="12" fill="${ink}" text-anchor="middle" font-family="sans-serif">Problem 1</text>`;
   /* her line — matplotlib C0, of course */
   const pts = TRAJ.map(p => `${X(p.t).toFixed(1)},${Y(p.s).toFixed(1)}`).join(" ");
-  svg += `<polyline points="${pts}" fill="none" stroke="#1f77b4" stroke-width="2" stroke-linejoin="round"/>`;
+  svg += `<polyline points="${pts}" fill="none" stroke="#7FDBFF" stroke-width="2.5" stroke-linejoin="round"/>`;
   const last = TRAJ[TRAJ.length - 1];
-  svg += `<circle cx="${X(last.t)}" cy="${Y(last.s)}" r="4" fill="#1f77b4"/>`;
+  svg += `<circle cx="${X(last.t)}" cy="${Y(last.s)}" r="4" fill="#7FDBFF"/>`;
   svg += `<text x="${X(last.t) - 8}" y="${Y(last.s) - 8}" font-size="9" fill="${grey}" text-anchor="end" font-family="sans-serif">you, again</text>`;
   /* the replay cursor — matplotlib C1, riding the line */
-  svg += `<circle id="trajDot" r="5" fill="#ff7f0e" stroke="#fff" stroke-width="1.5" style="display:none"/>`;
+  svg += `<circle id="trajDot" r="5" fill="#FF851B" stroke="#0B0B10" stroke-width="1.5" style="display:none"/>`;
   svg += `</svg>`;
 
   const fig = document.getElementById("trajFig");
