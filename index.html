@@ -68,7 +68,7 @@
   }
 
   /* ============ intro ============ */
-  #intro { justify-content: center; gap: 34px; text-align: center; }
+  #intro { justify-content: center; gap: 24px; text-align: center; }
   #intro .lede {
     max-width: 34em;
     color: var(--muted);
@@ -287,7 +287,7 @@
   }
   .ex-card {
     flex: 1 1 0;
-    min-width: 210px;
+    min-width: 190px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 6px;
@@ -353,7 +353,23 @@
   @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
 
   /* palette + tools */
-  .toolbelt { display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 4px; }
+  #task { gap: 16px; padding-top: 24px; }
+  .toolbelt {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    align-items: center;
+    max-width: 180px;
+    margin-left: 6px;
+  }
+  .toolbelt .tool-row { flex-direction: column; width: 100%; }
+  .toolbelt .tool-row .btn { width: 100%; }
+  @media (max-width: 899px) {
+    .work { flex-wrap: wrap; }
+    .toolbelt { max-width: none; flex-basis: 100%; margin: 8px 0 0; }
+    .toolbelt .tool-row { flex-direction: row; width: auto; }
+    .toolbelt .tool-row .btn { width: auto; }
+  }
   .palette { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
   .swatch {
     width: 34px; height: 34px;
@@ -389,10 +405,25 @@
   .toast.ok  { color: var(--arc-green); }
 
   /* ============ celebration ============ */
-  #win { justify-content: center; gap: 34px; text-align: center; }
+  #win { justify-content: center; gap: 18px; text-align: center; padding-top: 26px; padding-bottom: 40px; }
+  .win-rowA {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .win-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 26em;
+    text-align: left;
+  }
+  .win-text .journey { font-size: 14px; line-height: 1.6; }
   #win .stats {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--muted);
     letter-spacing: .06em;
     line-height: 2.1;
@@ -402,8 +433,8 @@
     background: #050509;
     text-align: left;
     white-space: pre-wrap;
-    min-height: 190px;
-    min-width: min(440px, 90vw);
+    min-height: 150px;
+    min-width: min(420px, 90vw);
   }
   #win .stats .sys { color: var(--arc-teal); }
   #win .stats .log { color: var(--arc-green); }
@@ -443,7 +474,7 @@
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 6px;
-    max-width: min(460px, 92vw);
+    max-width: min(380px, 92vw);
     height: auto;
   }
   #win .fig figcaption {
@@ -520,7 +551,7 @@
 <!-- ================= SCENE 1 : TITLE ================= -->
 <section class="scene on" id="intro">
   <p class="eyebrow">Cognitive Abstraction &amp; Reasoning Corpus · special edition · n&nbsp;=&nbsp;1</p>
-  <div id="introTitle" class="pixel-block rain" style="--px: clamp(9px, 2.6vw, 19px);" role="heading" aria-level="1" aria-label="One last task"></div>
+  <div id="introTitle" class="pixel-block rain" style="--px: clamp(8px, 2.2vw, 15px);" role="heading" aria-level="1" aria-label="One last task"></div>
   <p class="lede">
     You made this task. You got <strong>260 people</strong> to sit exactly where
     you're sitting now, and you tracked every click they made.
@@ -583,55 +614,58 @@
   <div class="work">
     <div class="pane">
       <h3>Test input</h3>
-      <div class="grid" id="testGrid" style="--cs: min(34px, calc((100vw - 150px) / 18));"></div>
+      <div class="grid" id="testGrid" style="--cs: min(30px, calc((100vw - 150px) / 18));"></div>
     </div>
     <span class="arrow">→</span>
     <div class="pane">
       <h3>Your output <em>— paint here</em></h3>
-      <div class="grid editable" id="outGrid" style="--cs: min(34px, calc((100vw - 150px) / 18));"></div>
+      <div class="grid editable" id="outGrid" style="--cs: min(30px, calc((100vw - 150px) / 18));"></div>
     </div>
-  </div>
-
-  <div class="toolbelt">
-    <div class="palette" id="palette" role="toolbar" aria-label="Color palette"></div>
-    <div class="tool-row">
-      <button class="btn small" id="copyBtn">Copy from input</button>
-      <button class="btn small" id="resetBtn">Reset grid</button>
+    <div class="toolbelt">
+      <div class="palette" id="palette" role="toolbar" aria-label="Color palette"></div>
+      <div class="tool-row">
+        <button class="btn small" id="copyBtn">Copy from input</button>
+        <button class="btn small" id="resetBtn">Reset grid</button>
+      </div>
+      <p class="hint">pick a color · click or drag to paint on the dashed grid · black&nbsp;=&nbsp;erase</p>
+      <button class="btn primary" id="submitBtn">Submit!</button>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
-    <p class="hint">pick a color · click or drag to paint on the dashed grid · black&nbsp;=&nbsp;erase</p>
-    <button class="btn primary" id="submitBtn">Submit!</button>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 </section>
 
 <!-- ================= SCENE 4 : CELEBRATION ================= -->
 <section class="scene" id="win">
   <p class="eyebrow">Correct solution! · end of study · end of an era</p>
-  <div id="winTitle" class="pixel-block" style="--px: clamp(10px, 3vw, 24px);" role="heading" aria-level="1"></div>
-  <div class="stats" id="stats"></div>
+  <div class="win-rowA">
+    <div id="winTitle" class="pixel-block" style="--px: clamp(8px, 2.4vw, 17px);" role="heading" aria-level="1"></div>
+    <div class="stats" id="stats"></div>
+  </div>
   <div class="replay-row" id="replayRow">
     <div class="replay-card">
       <span class="pv-label" style="visibility:visible">your solve, replayed</span>
-      <div class="grid" id="replayGrid" style="--cs: 17px;"></div>
+      <div class="grid" id="replayGrid" style="--cs: 14px;"></div>
       <span class="replay-meta" id="replayMeta">&nbsp;</span>
     </div>
     <figure class="fig show" id="trajFig"></figure>
+    <div class="win-text">
+      <p class="journey">
+        Finding the solution to the puzzle was the easy part. What was not at all
+        easy: <strong>building this task from nothing</strong>, getting it online and keeping
+        it running, collecting data from <strong>260 participants</strong> across
+        <strong>75 puzzles</strong>, and then turning thousands of logged clicks into
+        real insight about <strong>how humans reason</strong> — all the way to a paper.
+        But you did it.
+      </p>
+      <p class="journey">
+        Most people will never see and understand how much work that took.
+        Most people won't even get the opportunity to learn, now that Claude can
+        just generate everything in no time. I'm glad I got to watch it all
+        unfold with you. I had so much fun looking back at the old codes written
+        by us humans. I hope you also enjoyed that journey!
+      </p>
+    </div>
   </div>
-  <p class="journey">
-    Finding the solution to the puzzle was the easy part. What was not at all
-    easy: <strong>building this task from nothing</strong>, getting it online and keeping
-    it running, collecting data from <strong>260 participants</strong> across
-    <strong>75 puzzles</strong>, and then turning thousands of logged clicks into
-    real insight about <strong>how humans reason</strong> — all the way to a paper.
-    But you did it.
-  </p>
-  <p class="journey">
-    Most people will never see and understand how much work that took.
-    Most people won't even get the opportunity to learn, now that Claude can
-    just generate everything in no time. I'm glad I got to watch it all
-    unfold with you. I had so much fun looking back at the old code written
-    by us humans. I hope you also enjoyed that journey!
-  </p>
   <p class="congrats" id="congrats"></p>
   <a class="paper" id="paperLink" target="_blank" rel="noopener"></a>
   <p class="signoff" id="signoff"></p>
@@ -748,11 +782,11 @@ function drawGrid(el, data) {
     card.className = "ex-card";
     card.innerHTML = `<span class="ex-tag">EX ${i + 1}</span>`;
     const a = document.createElement("div");
-    a.className = "grid"; a.style.setProperty("--cs", "clamp(8px, 1.6vw, 11px)");
+    a.className = "grid"; a.style.setProperty("--cs", "clamp(7px, 1.4vw, 9px)");
     const arrow = document.createElement("span");
     arrow.className = "arrow"; arrow.textContent = "→";
     const b = document.createElement("div");
-    b.className = "grid"; b.style.setProperty("--cs", "clamp(8px, 1.6vw, 11px)");
+    b.className = "grid"; b.style.setProperty("--cs", "clamp(7px, 1.4vw, 9px)");
     drawGrid(a, pair.input); drawGrid(b, pair.output);
     card.append(a, arrow, b);
     wrap.appendChild(card);
@@ -1287,7 +1321,7 @@ function winAnalysis() {
    ============================================================ */
 function renderTrajectory() {
   if (TRAJ.length < 2) return;
-  const Wp = 460, Hp = 240, m = { l: 52, r: 16, t: 30, b: 40 };
+  const Wp = 380, Hp = 200, m = { l: 48, r: 14, t: 26, b: 36 };
   const tMax = TRAJ[TRAJ.length - 1].t;
   const sMin = Math.min(...TRAJ.map(p => p.s));
   const y0 = Math.max(0, Math.floor((sMin - 0.02) * 10) / 10);
@@ -1295,7 +1329,7 @@ function renderTrajectory() {
   const Y = s => m.t + (1 - (s - y0) / (1 - y0)) * (Hp - m.t - m.b);
   const ink = "#B9B9C8", axis = "#55556A", grey = "#8A8A9A";
 
-  let svg = `<svg class="plot" viewBox="0 0 ${Wp} ${Hp}" width="${Wp}" role="img" aria-label="Line chart: your similarity to the solution rising to 1.0 over time">`;
+  let svg = `<svg class="plot" viewBox="0 0 ${Wp} ${Hp}" width="${Wp}" height="${Hp}" role="img" aria-label="Line chart: your similarity to the solution rising to 1.0 over time">`;
   /* axes */
   svg += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${Hp - m.b}" stroke="${axis}" stroke-width="1"/>`;
   svg += `<line x1="${m.l}" y1="${Hp - m.b}" x2="${Wp - m.r}" y2="${Hp - m.b}" stroke="${axis}" stroke-width="1"/>`;
