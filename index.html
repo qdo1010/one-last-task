@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Last Task</title>
+</head>
+<body>
+<title>One Last Task</title>
+<style>
+  /* ============ tokens ============ */
+  :root {
+    color-scheme: dark;
+    --bg: #0B0B10;          /* near-black, blue bias — the ARC grid at night */
+    --panel: #14141B;
+    --panel-2: #191922;
+    --line: #2E2E3A;
+    --text: #EDEDF2;
+    --muted: #9494A6;
+    --faint: #5E5E70;
+    /* the ARC palette is the accent system */
+    --arc-blue: #0074D9; --arc-red: #FF4136; --arc-green: #2ECC40;
+    --arc-yellow: #FFDC00; --arc-grey: #AAAAAA; --arc-fuchsia: #F012BE;
+    --arc-orange: #FF851B; --arc-teal: #7FDBFF; --arc-brown: #870C25;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ scenes ============ */
+  .scene {
+    display: none;
+    min-height: 100vh;
+    padding: 48px 20px 64px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  .scene.on { display: flex; flex-direction: column; align-items: center; }
+  .scene { animation: sceneIn .5s ease both; }
+  @keyframes sceneIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  /* ============ pixel headline ============ */
+  .pixel-block { display: flex; flex-direction: column; gap: calc(var(--px, 16px) * .55); align-items: center; }
+  .pixel-line { display: grid; gap: 2px; }
+  .pixel-line .pc { width: var(--px, 16px); height: var(--px, 16px); border-radius: 1px; }
+  .pc.lit { background: var(--text); }
+  .pc.dim { background: transparent; }
+
+  /* rain-in animation for title cells */
+  @media (prefers-reduced-motion: no-preference) {
+    .rain .pc.lit { opacity: 0; transform: translateY(-14px); animation: rainIn .45s ease forwards; animation-delay: var(--d, 0s); }
+    @keyframes rainIn { to { opacity: 1; transform: none; } }
+  }
+
+  /* ============ intro ============ */
+  #intro { justify-content: center; gap: 34px; text-align: center; }
+  #intro .lede {
+    max-width: 34em;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  #intro .lede strong { color: var(--text); font-weight: 600; }
+  #intro .rules {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--faint);
+    letter-spacing: .06em;
+    line-height: 2;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 14px 30px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  .btn:hover, .btn:focus-visible { border-color: var(--arc-teal); background: rgba(127,219,255,.06); outline: none; }
+  .btn:active { transform: scale(.98); }
+  .btn.primary { border-color: var(--arc-green); color: var(--arc-green); }
+  .btn.primary:hover, .btn.primary:focus-visible { background: rgba(46,204,64,.1); }
+
+  /* ============ build scene ============ */
+  #build { gap: 18px; padding-top: 28px; padding-bottom: 40px; }
+  .build-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 960px;
+  }
+  #build .lede {
+    flex: 1 1 380px;
+    max-width: 44em;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: left;
+  }
+  #build .lede strong { color: var(--text); font-weight: 600; }
+  .arch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-family: var(--mono);
+  }
+  .arch .tier {
+    border: 1px dashed var(--faint);
+    border-radius: 4px;
+    padding: 8px 16px;
+    text-align: center;
+    color: var(--faint);
+    transition: border-color .4s, color .4s, box-shadow .4s;
+  }
+  .arch .tier .t-name { font-size: 12px; letter-spacing: .2em; }
+  .arch .tier .t-sub { font-size: 10px; letter-spacing: .06em; margin-top: 4px; opacity: .8; }
+  .arch .link { color: var(--faint); font-size: 14px; }
+  .arch .tier.built { border-style: solid; color: var(--text); }
+  .arch .tier.built.t-client { border-color: var(--arc-teal); box-shadow: 0 0 14px rgba(127,219,255,.25); }
+  .arch .tier.built.t-server { border-color: var(--arc-orange); box-shadow: 0 0 14px rgba(255,133,27,.25); }
+  .arch .tier.built.t-db     { border-color: var(--arc-green); box-shadow: 0 0 14px rgba(46,204,64,.25); }
+
+  .buildrow {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .terminal {
+    flex: 1 1 420px;
+    max-width: 640px;
+    background: #050509;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: text;
+  }
+  /* live preview — the website, assembling itself */
+  .preview {
+    flex: 1 1 250px;
+    max-width: 300px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .prev-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .pv { visibility: hidden; }
+  .pv-label { font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); }
+  .pv-grid { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); width: max-content; }
+  .pv-grid i { width: 6px; height: 6px; display: block; background: #000; }
+  .pv-pair { display: flex; gap: 7px; align-items: center; }
+  .pv-pair .arrow { font-size: 11px; }
+  .pv-palette { display: flex; gap: 2px; }
+  .pv-palette i { width: 10px; height: 10px; display: block; border-radius: 1px; }
+  .pv-submit {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    color: var(--arc-green); border: 1px solid var(--arc-green);
+    border-radius: 2px; padding: 4px 10px; width: max-content;
+  }
+  .pv-net { font-family: var(--mono); font-size: 9.5px; line-height: 1.9; color: var(--muted); }
+  .pv-net b { font-weight: 400; color: var(--arc-green); }
+  .pv-status { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: .08em; }
+  .pv-status b { font-weight: 600; color: var(--arc-red); }
+  .pv-status b.up { color: var(--arc-green); }
+  .pv-rows { font-family: var(--mono); font-size: 9px; line-height: 1.9; color: var(--muted); white-space: pre; overflow: hidden; }
+  .pv-rows .hd { color: var(--faint); }
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: .1em;
+  }
+  .term-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .term-bar i:nth-child(1) { background: var(--arc-red); }
+  .term-bar i:nth-child(2) { background: var(--arc-yellow); }
+  .term-bar i:nth-child(3) { background: var(--arc-green); }
+  .term-bar span { margin-left: 8px; }
+  #term {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: #C9C9DA;
+    padding: 14px 16px;
+    height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+  }
+  #term .hdr { color: var(--arc-yellow); }
+  #term .log { color: var(--arc-green); }
+  #term .sys { color: var(--arc-teal); }
+  #term .caret { display: inline-block; width: 7px; height: 13px; background: #C9C9DA; vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
+  #build .mash-hint {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--faint);
+    letter-spacing: .08em;
+    text-align: center;
+  }
+  #enterTaskBtn { display: none; }
+
+  /* ============ task scene ============ */
+  #task { gap: 26px; }
+  .hud {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .08em;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .hud .rec::before { content: "●"; color: var(--arc-red); margin-right: 6px; animation: blink 1.6s steps(1) infinite; }
+  @media (prefers-reduced-motion: reduce) { .hud .rec::before { animation: none; } }
+  @keyframes blink { 50% { opacity: .2; } }
+  .tries b { color: var(--text); letter-spacing: .3em; margin-left: 4px; }
+
+  .sect-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--faint);
+    align-self: flex-start;
+  }
+
+  .examples {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .ex-card {
+    flex: 1 1 0;
+    min-width: 210px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+  }
+  .ex-card .ex-tag {
+    position: absolute;
+    top: 8px; left: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: var(--faint);
+  }
+  .arrow { color: var(--faint); font-size: 18px; flex: none; }
+
+  .work {
+    display: flex;
+    gap: clamp(10px, 2.5vw, 26px);
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+  }
+  .work .arrow { align-self: center; }
+  .grid.editable { outline: 1px dashed var(--arc-teal); outline-offset: 4px; }
+  .pane { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .pane h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .pane h3 em { font-style: normal; color: var(--arc-teal); }
+
+  /* grids */
+  .grid {
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    width: max-content;
+  }
+  .grid .cell { width: var(--cs, 14px); height: var(--cs, 14px); }
+  .grid.editable .cell { cursor: crosshair; }
+  .grid.editable { touch-action: none; }
+  .c0 { background: #000; } .c1 { background: var(--arc-blue); }
+  .c2 { background: var(--arc-red); } .c3 { background: var(--arc-green); }
+  .c4 { background: var(--arc-yellow); } .c5 { background: var(--arc-grey); }
+  .c6 { background: var(--arc-fuchsia); } .c7 { background: var(--arc-orange); }
+  .c8 { background: var(--arc-teal); } .c9 { background: var(--arc-brown); }
+
+  .shake { animation: shake .4s ease; }
+  @keyframes shake {
+    20% { transform: translateX(-7px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(3px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+
+  /* palette + tools */
+  .toolbelt { display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 4px; }
+  .palette { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .swatch {
+    width: 34px; height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    transition: transform .1s;
+  }
+  .swatch:hover { transform: scale(1.1); }
+  .swatch.sel { outline: 2px solid var(--text); outline-offset: 2px; }
+  .swatch:focus-visible { outline: 2px solid var(--arc-teal); outline-offset: 2px; }
+  .tool-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn.small { font-size: 11.5px; padding: 10px 16px; }
+  .hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: .06em;
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.8;
+  }
+
+  .toast {
+    min-height: 26px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    letter-spacing: .04em;
+    text-align: center;
+  }
+  .toast.err { color: var(--arc-red); }
+  .toast.ok  { color: var(--arc-green); }
+
+  /* ============ celebration ============ */
+  #win { justify-content: center; gap: 34px; text-align: center; }
+  #win .stats {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .06em;
+    line-height: 2.1;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 22px;
+    background: #050509;
+    text-align: left;
+    white-space: pre-wrap;
+    min-height: 190px;
+    min-width: min(440px, 90vw);
+  }
+  #win .stats .sys { color: var(--arc-teal); }
+  #win .stats .log { color: var(--arc-green); }
+  /* replay + trajectory figure, side by side */
+  .replay-row {
+    display: none;
+    gap: 26px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .replay-row.show { display: flex; }
+  @media (prefers-reduced-motion: no-preference) {
+    .replay-row.show { animation: sceneIn .5s ease both; }
+  }
+  .replay-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 20px;
+  }
+  .replay-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--faint);
+    letter-spacing: .08em;
+    font-variant-numeric: tabular-nums;
+  }
+  /* her trajectory figure — deliberately matplotlib */
+  #win .fig { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  #win .fig .plot {
+    background: #fff;
+    border-radius: 4px;
+    padding: 6px;
+    max-width: 92vw;
+  }
+  #win .fig figcaption {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    letter-spacing: .08em;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    #win .fig.show { animation: sceneIn .5s ease both; }
+  }
+  #win .journey {
+    max-width: 36em;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+  #win .journey strong { color: var(--text); font-weight: 600; }
+  #win .congrats { font-size: 21px; color: var(--text); font-weight: 600; letter-spacing: .01em; }
+  #win .signoff { font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .08em; }
+  #win a.paper {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .1em;
+    color: var(--arc-teal);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 12px 22px;
+    transition: border-color .15s, background .15s;
+  }
+  #win a.paper:hover, #win a.paper:focus-visible { border-color: var(--arc-teal); background: rgba(127,219,255,.06); outline: none; }
+  .footer-note {
+    margin-top: 26px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    letter-spacing: .08em;
+  }
+
+  #fx {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+  }
+</style>
+
+<canvas id="fx"></canvas>
+
+<!-- ================= SCENE 1 : TITLE ================= -->
+<section class="scene on" id="intro">
+  <p class="eyebrow">Cognitive Abstraction &amp; Reasoning Corpus · special edition · n&nbsp;=&nbsp;1</p>
+  <div id="introTitle" class="pixel-block rain" style="--px: clamp(9px, 2.6vw, 19px);" role="heading" aria-level="1" aria-label="One last task"></div>
+  <p class="lede">
+    You made this task. You got <strong>260 people</strong> to sit exactly where
+    you're sitting now, and you tracked every click they made.
+    Now that you've defended, the task interface would like one final word
+    with <strong>subject&nbsp;#261</strong>.
+  </p>
+  <p class="rules">
+    infer the rule from the examples · construct the output grid<br>
+    three tries — your rules, after all
+  </p>
+  <button class="btn primary" id="beginBtn">Begin task</button>
+</section>
+
+<!-- ================= SCENE 2 : BUILD THE INTERFACE ================= -->
+<section class="scene" id="build">
+  <p class="eyebrow">Step 0 · the part nobody sees</p>
+  <div class="build-head">
+    <div id="buildTitle" class="pixel-block rain" style="--px: clamp(7px, 1.6vw, 12px);" role="heading" aria-level="1" aria-label="Build it"></div>
+    <p class="lede">
+      Wait. Let's take it from the beginning. Before anyone solves anything,
+      <strong>someone has to build the thing</strong> — and once upon a time, that someone
+      had never made a website before. Every website is three jobs at once:
+      a <strong>client</strong> for what people see, a <strong>server</strong> that answers it,
+      and a <strong>database</strong> that keeps what matters. It is a lot of work.
+      You did it anyway. Build it one more time.
+    </p>
+  </div>
+  <div class="arch">
+    <div class="tier t-client" id="tierClient"><div class="t-name">CLIENT</div><div class="t-sub">what they see</div></div>
+    <span class="link">⇄</span>
+    <div class="tier t-server" id="tierServer"><div class="t-name">SERVER</div><div class="t-sub">what you run</div></div>
+    <span class="link">⇄</span>
+    <div class="tier t-db" id="tierDb"><div class="t-name">DATABASE</div><div class="t-sub">what you keep</div></div>
+  </div>
+  <div class="buildrow">
+    <div class="terminal" id="terminal">
+      <div class="term-bar"><i></i><i></i><i></i><span>caroline@lab: ~/ARC-behavioral</span></div>
+      <pre id="term"></pre>
+    </div>
+    <div class="preview" aria-label="Website preview, building as you type">
+      <div class="term-bar"><i></i><i></i><i></i><span>localhost:3000</span></div>
+      <div class="prev-body" id="prevBody"></div>
+    </div>
+  </div>
+  <p class="mash-hint" id="mashHint">type anything — mash your keyboard (or tap the terminal). your hands remember</p>
+  <button class="btn primary" id="enterTaskBtn">Enter the task</button>
+</section>
+
+<!-- ================= SCENE 3 : THE TASK ================= -->
+<section class="scene" id="task" aria-label="Puzzle">
+  <div class="hud">
+    <span>TASK 01 / 01 &nbsp;·&nbsp; 0ca9ddb6.json</span>
+    <span class="rec">action tracking on&nbsp;·&nbsp;<span id="actions">0</span> actions</span>
+    <span class="tries">TRY <b id="triesDots">●○○</b></span>
+  </div>
+
+  <span class="sect-label">Examples</span>
+  <div class="examples" id="examples"></div>
+
+  <span class="sect-label">Your turn</span>
+  <div class="work">
+    <div class="pane">
+      <h3>Test input</h3>
+      <div class="grid" id="testGrid" style="--cs: min(34px, calc((100vw - 150px) / 18));"></div>
+    </div>
+    <span class="arrow">→</span>
+    <div class="pane">
+      <h3>Your output <em>— paint here</em></h3>
+      <div class="grid editable" id="outGrid" style="--cs: min(34px, calc((100vw - 150px) / 18));"></div>
+    </div>
+  </div>
+
+  <div class="toolbelt">
+    <div class="palette" id="palette" role="toolbar" aria-label="Color palette"></div>
+    <div class="tool-row">
+      <button class="btn small" id="copyBtn">Copy from input</button>
+      <button class="btn small" id="resetBtn">Reset grid</button>
+    </div>
+    <p class="hint">pick a color · click or drag to paint on the dashed grid · black&nbsp;=&nbsp;erase</p>
+    <button class="btn primary" id="submitBtn">Submit!</button>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= SCENE 4 : CELEBRATION ================= -->
+<section class="scene" id="win">
+  <p class="eyebrow">Correct solution! · end of study · end of an era</p>
+  <div id="winTitle" class="pixel-block" style="--px: clamp(10px, 3vw, 24px);" role="heading" aria-level="1"></div>
+  <div class="stats" id="stats"></div>
+  <div class="replay-row" id="replayRow">
+    <div class="replay-card">
+      <span class="pv-label" style="visibility:visible">your solve, replayed</span>
+      <div class="grid" id="replayGrid" style="--cs: 17px;"></div>
+      <span class="replay-meta" id="replayMeta">&nbsp;</span>
+    </div>
+    <figure class="fig show" id="trajFig"></figure>
+  </div>
+  <p class="journey">
+    Finding the solution to the puzzle was the easy part. What was not at all
+    easy: <strong>building this task from nothing</strong>, getting it online and keeping
+    it running, collecting data from <strong>260 participants</strong> across
+    <strong>75 puzzles</strong>, and then turning thousands of logged clicks into
+    real insight about <strong>how humans reason</strong> — all the way to a paper.
+    But you did it.
+  </p>
+  <p class="journey">
+    Most people will never see how much work that took.
+    I'm glad I got to see it — and I hope you enjoyed the journey.
+  </p>
+  <p class="congrats" id="congrats"></p>
+  <a class="paper" id="paperLink" target="_blank" rel="noopener"></a>
+  <p class="signoff" id="signoff"></p>
+  <p class="signoff">P.S. — the database password is still hardcoded in your index.js.<br>It's redacted here, but you should replace it and move it to an env var.</p>
+  <p class="footer-note">task 0ca9ddb6 · CogARC training set · made with love and Claude</p>
+</section>
+
+<script>
+"use strict";
+
+/* ============================================================
+   EDIT ME — everything personal lives here
+   ============================================================ */
+const CONFIG = {
+  pixelName: "DR AHN",                      // rendered in giant pixels on the win screen
+  congrats:  "Congratulations, Dr. Ahn.",   // the line under the journey
+  signoff:   "made for the newest doctor of neuroscience, by a friend who watched it all happen",
+  paperUrl:  "https://arxiv.org/abs/2602.22408",
+  paperLabel:"READ HER PAPER → arXiv:2602.22408",
+};
+
+/* ============================================================
+   The task — 0ca9ddb6, exactly as served to her participants
+   ============================================================ */
+const TRAIN = [
+  {input:[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+   output:[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,4,0,4,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,4,0,4,0,0,0,0,0],[0,0,0,0,0,0,7,0,0],[0,0,0,0,0,7,1,7,0],[0,0,0,0,0,0,7,0,0],[0,0,0,0,0,0,0,0,0]]},
+  {input:[[0,0,0,8,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,2,0,0],[0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0],[0,2,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+   output:[[0,0,0,8,0,0,0,0,0],[0,0,0,0,0,4,0,4,0],[0,0,7,0,0,0,2,0,0],[0,7,1,7,0,4,0,4,0],[0,0,7,0,0,0,0,0,0],[0,0,0,0,0,0,7,0,0],[4,0,4,0,0,7,1,7,0],[0,2,0,0,0,0,7,0,0],[4,0,4,0,0,0,0,0,0]]},
+  {input:[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,6,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]],
+   output:[[0,0,0,0,0,0,0,0,0],[0,4,0,4,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,4,0,4,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,6,0,0],[0,0,0,7,0,0,0,0,0],[0,0,7,1,7,0,0,0,0],[0,0,0,7,0,0,0,0,0]]}
+];
+const TEST_INPUT = [[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0],[0,0,2,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,8,0,0,0],[0,0,0,0,0,0,0,0,0],[0,6,0,0,0,0,0,2,0],[0,0,0,0,0,0,0,0,0]];
+/* Yes — the answer is right here, base64'd.
+   But inferring the rule from sparse examples is kind of your whole thing.
+   Don't you dare. */
+const ANSWER_B64 = "W1swLDAsMCwwLDAsMCwwLDAsMF0sWzAsMCwwLDAsMCwwLDcsMCwwXSxbMCw0LDAsNCwwLDcsMSw3LDBdLFswLDAsMiwwLDAsMCw3LDAsMF0sWzAsNCwwLDQsMCwwLDAsMCwwXSxbMCwwLDAsMCwwLDgsMCwwLDBdLFswLDAsMCwwLDAsMCw0LDAsNF0sWzAsNiwwLDAsMCwwLDAsMiwwXSxbMCwwLDAsMCwwLDAsNCwwLDRdXQ==";
+const answer = () => JSON.parse(atob(ANSWER_B64));
+
+const ARC_COLORS = ["#000000","#0074D9","#FF4136","#2ECC40","#FFDC00","#AAAAAA","#F012BE","#FF851B","#7FDBFF","#870C25"];
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================================================
+   Pixel headline font (3–4 wide × 5 tall)
+   ============================================================ */
+const GLYPHS = {
+  A:["010","101","111","101","101"], B:["110","101","110","101","110"],
+  C:["011","100","100","100","011"],
+  D:["110","101","101","101","110"], E:["111","100","110","100","111"],
+  G:["111","100","101","101","111"], H:["101","101","111","101","101"],
+  I:["111","010","010","010","111"], K:["1001","1010","1100","1010","1001"],
+  L:["100","100","100","100","111"], N:["1001","1101","1011","1001","1001"],
+  O:["111","101","101","101","111"], R:["110","101","110","101","101"],
+  S:["011","100","010","001","110"], T:["111","010","010","010","010"],
+  U:["101","101","101","101","111"], Y:["101","101","010","010","010"],
+  ".":["0","0","0","0","1"], " ":["00","00","00","00","00"],
+};
+
+function renderPixelLine(text, colorFn) {
+  const rows = ["","","","",""];
+  for (const ch of text.toUpperCase()) {
+    const g = GLYPHS[ch] || GLYPHS[" "];
+    for (let r = 0; r < 5; r++) rows[r] += g[r] + "0";
+  }
+  const width = rows[0].length - 1;
+  const line = document.createElement("div");
+  line.className = "pixel-line";
+  line.style.gridTemplateColumns = `repeat(${width}, var(--px))`;
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < width; c++) {
+      const cell = document.createElement("div");
+      const lit = rows[r][c] === "1";
+      cell.className = "pc " + (lit ? "lit" : "dim");
+      if (lit) {
+        const col = colorFn && colorFn(c, r, width);
+        if (col) cell.style.background = col;
+        cell.style.setProperty("--d", (Math.random() * 0.9).toFixed(2) + "s");
+      }
+      line.appendChild(cell);
+    }
+  }
+  return line;
+}
+
+/* intro title: ONE / LAST / TASK — last line in ARC yellow */
+{
+  const t = document.getElementById("introTitle");
+  t.appendChild(renderPixelLine("ONE"));
+  t.appendChild(renderPixelLine("LAST"));
+  t.appendChild(renderPixelLine("TASK", () => "var(--arc-yellow)"));
+  const b = document.getElementById("buildTitle");
+  b.appendChild(renderPixelLine("BUILD IT", () => "var(--arc-teal)"));
+}
+
+/* ============================================================
+   Grid rendering
+   ============================================================ */
+function drawGrid(el, data) {
+  el.innerHTML = "";
+  el.style.gridTemplateColumns = `repeat(${data[0].length}, var(--cs))`;
+  data.forEach((row, y) => row.forEach((v, x) => {
+    const c = document.createElement("div");
+    c.className = "cell c" + v;
+    c.dataset.x = x; c.dataset.y = y;
+    el.appendChild(c);
+  }));
+}
+
+/* examples */
+{
+  const wrap = document.getElementById("examples");
+  TRAIN.forEach((pair, i) => {
+    const card = document.createElement("div");
+    card.className = "ex-card";
+    card.innerHTML = `<span class="ex-tag">EX ${i + 1}</span>`;
+    const a = document.createElement("div");
+    a.className = "grid"; a.style.setProperty("--cs", "clamp(8px, 1.6vw, 11px)");
+    const arrow = document.createElement("span");
+    arrow.className = "arrow"; arrow.textContent = "→";
+    const b = document.createElement("div");
+    b.className = "grid"; b.style.setProperty("--cs", "clamp(8px, 1.6vw, 11px)");
+    drawGrid(a, pair.input); drawGrid(b, pair.output);
+    card.append(a, arrow, b);
+    wrap.appendChild(card);
+  });
+  drawGrid(document.getElementById("testGrid"), TEST_INPUT);
+}
+
+/* ============================================================
+   Editor state + tools
+   ============================================================ */
+const H = TEST_INPUT.length, W = TEST_INPUT[0].length;
+let out = Array.from({length: H}, () => Array(W).fill(0));
+let selected = 1;
+let actions = 0, tries = 0, startTime = null, solved = false;
+
+const outGrid = document.getElementById("outGrid");
+const actionsEl = document.getElementById("actions");
+const toast = document.getElementById("toast");
+
+/* action recording — every click is saved (what, where, when) plus the
+   grid's similarity to the solution, like the paper's time-series figures */
+let TRAJ = [], ANS = null;
+function recordPoint(ev) {
+  if (!startTime || solved) return;
+  if (!ANS) ANS = answer();
+  let match = 0;
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (out[y][x] === ANS[y][x]) match++;
+  TRAJ.push({ t: Date.now() - startTime, s: match / (H * W), ...(ev || {}) });
+}
+
+function paintCell(x, y) {
+  if (out[y][x] === selected) return;
+  out[y][x] = selected;
+  outGrid.children[y * W + x].className = "cell c" + selected;
+  actionsEl.textContent = ++actions;
+  recordPoint({ type: "paint", x, y, v: selected });
+}
+drawGrid(outGrid, out);
+
+/* palette */
+{
+  const pal = document.getElementById("palette");
+  ARC_COLORS.forEach((hex, i) => {
+    const s = document.createElement("button");
+    s.className = "swatch" + (i === selected ? " sel" : "");
+    s.style.background = hex;
+    s.setAttribute("aria-label", "color " + i);
+    s.addEventListener("click", () => {
+      selected = i;
+      pal.querySelectorAll(".swatch").forEach(el => el.classList.remove("sel"));
+      s.classList.add("sel");
+    });
+    pal.appendChild(s);
+  });
+}
+
+/* click + drag painting (pointer events; works for touch too) */
+let painting = false;
+outGrid.addEventListener("pointerdown", e => {
+  const t = e.target;
+  if (!t.dataset.x) return;
+  e.preventDefault();
+  if (t.hasPointerCapture && t.hasPointerCapture(e.pointerId)) t.releasePointerCapture(e.pointerId);
+  painting = true;
+  paintCell(+t.dataset.x, +t.dataset.y);
+});
+window.addEventListener("pointermove", e => {
+  if (!painting) return;
+  const t = document.elementFromPoint(e.clientX, e.clientY);
+  if (t && t.parentElement === outGrid && t.dataset.x) paintCell(+t.dataset.x, +t.dataset.y);
+});
+window.addEventListener("pointerup", () => painting = false);
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+  out = TEST_INPUT.map(r => r.slice());
+  drawGrid(outGrid, out);
+  actionsEl.textContent = ++actions;
+  recordPoint({ type: "copy" });
+  msg("", "");
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  out = Array.from({length: H}, () => Array(W).fill(0));
+  drawGrid(outGrid, out);
+  actionsEl.textContent = ++actions;
+  recordPoint({ type: "reset" });
+  msg("", "");
+});
+
+function msg(text, cls) {
+  toast.textContent = text;
+  toast.className = "toast " + cls;
+}
+
+/* tries display: ●=used ○=left */
+function drawTries() {
+  const el = document.getElementById("triesDots");
+  el.textContent = tries >= 3 ? "∞" : "●".repeat(tries + 1) + "○".repeat(2 - tries);
+}
+
+/* ============================================================
+   Submit
+   ============================================================ */
+document.getElementById("submitBtn").addEventListener("click", () => {
+  if (solved) return;
+  const ref = answer();
+  const correct = ref.every((row, y) => row.every((v, x) => out[y][x] === v));
+  if (correct) { winSequence(); return; }
+  tries++;
+  drawTries();
+  outGrid.classList.remove("shake");
+  void outGrid.offsetWidth;
+  outGrid.classList.add("shake");
+  if (tries === 1)      msg("Wrong solution.", "err");
+  else if (tries === 2) msg("Wrong solution. (What does each color do?)", "err");
+  else if (tries === 3) msg("Your own rules say the study moves on now. It's your night — tries are unlimited.", "err");
+  else                  msg("Wrong solution. No pressure. None of the 260 are watching.", "err");
+});
+
+/* ============================================================
+   Scenes
+   ============================================================ */
+function show(id) {
+  document.querySelectorAll(".scene").forEach(s => s.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
+  window.scrollTo(0, 0);
+}
+document.getElementById("beginBtn").addEventListener("click", () => {
+  show("build");
+  startBuild();
+});
+document.getElementById("enterTaskBtn").addEventListener("click", () => {
+  show("task");
+  startTime = Date.now();
+  drawTries();
+  recordPoint({ type: "start" });   // t=0, empty grid — the start of her trajectory
+});
+
+/* ============================================================
+   Step 0 — build the stack, hackertyper style.
+   The client snippet is her real code (js/testing_interface.js).
+   ============================================================ */
+const STAGES = [
+  {
+    tier: "tierClient",
+    hdr: "$ vim js/testing_interface.js        # the client — yes, this is your actual code",
+    done: "✓ client ready — grids render, colors clickable, 'Correct solution!' on standby",
+    code:
+`function loadJSONTask(train, test) {
+    resetTask();
+    $('#modal_bg').hide();
+    $('#error_display').hide();
+    for (var i = 0; i < train.length; i++) {
+        pair = train[i];
+        input_grid = convertSerializedGridToGridObject(pair['input']);
+        output_grid = convertSerializedGridToGridObject(pair['output']);
+        fillPairPreview(i, input_grid, output_grid);
+    }
+    for (var i = 0; i < test.length; i++) {
+        TEST_PAIRS.push(test[i]);
+    }
+    CURRENT_INPUT_GRID = convertSerializedGridToGridObject(TEST_PAIRS[0]['input']);
+    fillTestInput(CURRENT_INPUT_GRID);
+    $('#current_test_input_id_display').html('1');
+}
+
+function copyFromInput() {
+    syncFromEditionGridToDataGrid();
+    CURRENT_OUTPUT_GRID = convertSerializedGridToGridObject(CURRENT_INPUT_GRID.grid);
+    syncFromDataGridToEditionGrid();
+    $('#output_grid_size').val(CURRENT_OUTPUT_GRID.height + 'x' + CURRENT_OUTPUT_GRID.width);
+}
+
+function fillPairPreview(pairId, inputGrid, outputGrid) {
+    var pairSlot = $('#pair_preview_' + pairId);
+    if (!pairSlot.length) {
+        pairSlot = $('<div id="pair_preview_' + pairId + '" class="pair_preview"></div>');
+        pairSlot.appendTo('#task_preview');
+    }
+    fillJqGridWithData(jqInputGrid, inputGrid);
+    fitCellsToContainer(jqInputGrid, inputGrid.height, inputGrid.width, 200, 200);
+    fillJqGridWithData(jqOutputGrid, outputGrid);
+    fitCellsToContainer(jqOutputGrid, outputGrid.height, outputGrid.width, 200, 200);
+}
+
+function submitSolution() {
+    syncFromEditionGridToDataGrid();
+    reference_output = TEST_PAIRS[CURRENT_TEST_PAIR_INDEX]['output'];
+    submitted_output = CURRENT_OUTPUT_GRID.grid;
+    for (var i = 0; i < reference_output.length; i++){
+        ref_row = reference_output[i];
+        for (var j = 0; j < ref_row.length; j++){
+            if (ref_row[j] != submitted_output[i][j]) {
+                errorMsg('Wrong solution.');
+                return
+            }
+        }
+    }
+    infoMsg('Correct solution!');
+}`
+  },
+  {
+    tier: "tierServer",
+    hdr: "$ vim index.js                       # the server — your actual Express code",
+    done: "✓ server up — Listening on Port 3000",
+    code:
+`// Import necessary packages
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require('cors');
+
+// create and configure the express app
+const PORT = process.env.PORT || 3000;
+var app = express();
+app.use(cors());
+app.use(bodyParser.json({limit: '500mb'})); // for parsing application/json
+app.use(bodyParser.urlencoded({limit: '500mb', extended: true}));
+
+// The index route
+app.get("/", function(req, res) {
+   res.send("ARC behavioral task by Cognitive Neuroimaging lab (Boston University)");
+});
+
+// Route to create new player
+app.post("/ARC", async function(req, res) {
+   // get information of player from POST body data
+   let { subj_ID, start_time, session } = req.body;
+
+   // check if the subj_ID already exists
+   const alreadyExisting = await db
+       .collection("BUBehavioral")
+       .findOne({ subj_ID: subj_ID });
+
+   if (alreadyExisting) {
+       res.send({ status: false, msg: "Participant subj_ID already exists" });
+   } else {
+       // create the new player
+       await db.collection("BUBehavioral").insertOne({ subj_ID, start_time, session });
+       console.log(\`Created participant \${subj_ID}\`);
+       res.send({ status: true, msg: "Participant created" });
+   }
+});`
+  },
+  {
+    tier: "tierDb",
+    hdr: "$ vim index.js  +32                  # the database — MongoDB Atlas, where the science lives",
+    done: "✓ Database is Connected!",
+    code:
+`// Database Connection Info
+const MongoClient = require("mongodb").MongoClient;
+const url = "mongodb+srv://<user>:<password>@cluster0.kjt6z.mongodb.net/arc-online-behavioral-db";
+let db;
+
+// Connect to the database with [url]
+(async () => {
+   let client = await MongoClient.connect(
+       url,
+       { useNewUrlParser: true }
+   );
+
+   db = client.db("ARC");
+
+   app.listen(PORT, async function() {
+       console.log(\`Listening on Port \${PORT}\`);
+           if (db) {
+               console.log("Database is Connected!");
+            }
+   });
+})();
+
+// Update participant data
+app.put("/ARC", async function(req, res) {
+   let { subj_ID, start_time, session } = req.body;
+   const alreadyExisting = await db
+       .collection("BUBehavioral")
+       .findOne({ subj_ID: subj_ID });
+   if (alreadyExisting) {
+       await db
+           .collection("BUBehavioral")
+           .updateOne({ subj_ID }, { $set: { subj_ID, start_time, session } });
+       res.send({ status: true, msg: "Participant task updated" });
+   } else {
+       res.send({ status: false, msg: "Participant subj_ID not found" });
+   }
+});`
+  }
+];
+
+const term = document.getElementById("term");
+let stageIdx = -1, charPos = 0, codeNode = null, buildDone = false, buildStarted = false;
+
+/* ---- live preview: the website assembles as she types ---- */
+const pvReveal = [[], [], []];   // one reveal list per stage
+{
+  const body = document.getElementById("prevBody");
+  const el = (tag, cls, txt) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt !== undefined) n.textContent = txt;
+    body.appendChild(n);
+    return n;
+  };
+  const miniGrid = (data, list) => {
+    const g = document.createElement("div");
+    g.className = "pv-grid pv";
+    g.style.gridTemplateColumns = `repeat(${data[0].length}, 6px)`;
+    list.push(g);
+    data.forEach(row => row.forEach(v => {
+      const c = document.createElement("i");
+      c.style.background = ARC_COLORS[v];
+      if (v !== 0) { c.className = "pv"; list.push(c); }  // colored cells draw in one by one
+      g.appendChild(c);
+    }));
+    return g;
+  };
+  /* client: example pair -> test input -> palette -> submit */
+  const L = pvReveal[0];
+  L.push(el("div", "pv-label pv", "examples"));
+  const pair = el("div", "pv-pair");
+  pair.appendChild(miniGrid(TRAIN[0].input, L));
+  const ar = document.createElement("span");
+  ar.className = "arrow pv"; ar.textContent = "→";
+  pair.appendChild(ar); L.push(ar);
+  pair.appendChild(miniGrid(TRAIN[0].output, L));
+  L.push(el("div", "pv-label pv", "test input"));
+  el("div", "pv-pair").appendChild(miniGrid(TEST_INPUT, L));
+  const palWrap = el("div", "pv-palette");
+  ARC_COLORS.forEach(hex => {
+    const s = document.createElement("i");
+    s.className = "pv"; s.style.background = hex;
+    palWrap.appendChild(s); L.push(s);
+  });
+  L.push(el("div", "pv-submit pv", "SUBMIT!"));
+  /* server: status + request log */
+  const S = pvReveal[1];
+  S.push(el("div", "pv-label pv", "server"));
+  const status = el("div", "pv-status pv");
+  status.innerHTML = 'localhost:3000 · <b id="pvSrv">offline</b>';
+  S.push(status);
+  const net = el("div", "pv-net");
+  [["GET  /", "200"], ["POST /ARC", "200"],
+   ["PUT  /ARC", "200"], ["PUT  /ARC", "200"],
+   ["PUT  /ARC", "200"]].forEach(([m, s]) => {
+    const line = document.createElement("div");
+    line.className = "pv";
+    line.innerHTML = m + "  <b>" + s + "</b>";
+    net.appendChild(line); S.push(line);
+  });
+  /* database: rows filling in */
+  const D = pvReveal[2];
+  D.push(el("div", "pv-label pv", "database"));
+  const rows = el("div", "pv-rows");
+  const mk = (txt, cls) => {
+    const r = document.createElement("div");
+    r.className = "pv" + (cls ? " " + cls : "");
+    r.textContent = txt;
+    rows.appendChild(r); D.push(r);
+  };
+  mk("db.BUBehavioral.find()", "hd");
+  mk('{ subj_ID: "001", session: 1 }');
+  mk('{ subj_ID: "014", session: 1 }');
+  mk('{ subj_ID: "072", session: 2 }');
+  mk('{ subj_ID: "133", session: 2 }');
+  mk('{ subj_ID: "260", session: 3 }');
+  mk("…260 participants and counting", "hd");
+}
+function renderPreview(stage, p) {
+  const list = pvReveal[stage];
+  if (!list) return;
+  const k = Math.ceil(p * list.length);
+  for (let i = 0; i < k; i++) list[i].classList.remove("pv");
+  if (stage === 1 && p >= 1) {
+    const srv = document.getElementById("pvSrv");
+    srv.textContent = "online"; srv.classList.add("up");
+  }
+}
+
+function termAppend(cls, text) {
+  const s = document.createElement("span");
+  if (cls) s.className = cls;
+  s.textContent = text;
+  term.appendChild(s);
+  term.scrollTop = term.scrollHeight;
+  return s;
+}
+function nextStage() {
+  stageIdx++;
+  if (stageIdx >= STAGES.length) { deploySequence(); return; }
+  termAppend("hdr", (stageIdx ? "\n\n" : "") + STAGES[stageIdx].hdr + "\n");
+  codeNode = termAppend("", "");
+  charPos = 0;
+}
+function typeChunk() {
+  if (buildDone || stageIdx < 0 || stageIdx >= STAGES.length) return;
+  const code = STAGES[stageIdx].code;
+  /* word-by-word: each keypress reveals the next few words of her code */
+  let p = charPos;
+  const nWords = 1 + Math.floor(Math.random() * 2);
+  for (let k = 0; k < nWords && p < code.length; k++) {
+    while (p < code.length && /\s/.test(code[p])) p++;
+    while (p < code.length && !/\s/.test(code[p])) p++;
+  }
+  charPos = Math.min(code.length, p);
+  codeNode.textContent = code.slice(0, charPos);
+  term.scrollTop = term.scrollHeight;
+  renderPreview(stageIdx, charPos / code.length);
+  if (charPos >= code.length) {
+    const st = STAGES[stageIdx];
+    if (st.tier) document.getElementById(st.tier).classList.add("built");
+    termAppend("log", "\n" + st.done + "\n");
+    nextStage();
+  }
+}
+function deploySequence() {
+  buildDone = true;
+  document.getElementById("mashHint").style.visibility = "hidden";
+  const lines = [
+    ["sys", "\n$ deploy --live"],
+    ["",    "\nuploading tasks .......... 75/75"],
+    ["",    "\nrecruiting participants "],
+  ];
+  let i = 0;
+  (function next() {
+    if (i < lines.length) { termAppend(lines[i][0], lines[i][1]); i++; setTimeout(next, 550); return; }
+    /* animated recruit counter */
+    const counter = termAppend("", "0/260");
+    let n = 0;
+    const iv = setInterval(() => {
+      n = Math.min(260, n + 13);
+      counter.textContent = n + "/260";
+      if (n >= 260) {
+        clearInterval(iv);
+        termAppend("log", "\n✓ all 260 subjects complete — data collected, analyses run, paper written");
+        termAppend("sys", "\n\nwaiting for subject #261 ");
+        termAppend("caret", "");
+        document.getElementById("enterTaskBtn").style.display = "inline-block";
+      }
+    }, 90);
+  })();
+}
+function startBuild() {
+  if (buildStarted) return;
+  buildStarted = true;
+  termAppend("sys", "ARC-behavioral build console — three tiers, first website, let's go\n");
+  nextStage();
+}
+window.addEventListener("keydown", e => {
+  if (!document.getElementById("build").classList.contains("on")) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === " ") e.preventDefault();
+  typeChunk();
+});
+document.getElementById("terminal").addEventListener("pointerdown", e => {
+  e.preventDefault();
+  typeChunk();
+});
+
+/* ============================================================
+   Win: her interface's exact message, then fireworks in the
+   shape of the rule — blue bursts orange-plus, red bursts
+   yellow-corners — then the celebration scene.
+   ============================================================ */
+function winSequence() {
+  TRAJ.push({ t: Date.now() - startTime, s: 1, type: "submit" });   // the submit that ends it
+  solved = true;
+  msg("Correct solution!", "ok");
+  winAnalysis();
+
+  /* personalize win screen */
+  const wt = document.getElementById("winTitle");
+  wt.innerHTML = "";
+  const seq = ["var(--arc-blue)","var(--arc-red)","var(--arc-green)","var(--arc-yellow)","var(--arc-orange)","var(--arc-teal)","var(--arc-fuchsia)"];
+  wt.appendChild(renderPixelLine(CONFIG.pixelName, (c, r, w) => seq[Math.floor(c / (w / CONFIG.pixelName.length)) % seq.length]));
+  wt.classList.add("rain");
+  document.getElementById("congrats").textContent = CONFIG.congrats;
+  const link = document.getElementById("paperLink");
+  link.href = CONFIG.paperUrl;
+  link.textContent = CONFIG.paperLabel;
+  document.getElementById("signoff").textContent = CONFIG.signoff;
+
+  if (reducedMotion) { show("win"); return; }
+  fireworks(4200);
+  setTimeout(() => show("win"), 1400);
+}
+
+/* ============================================================
+   Post-solve: she analyzes her own solution, one last time.
+   Real numbers from the action tracker above.
+   ============================================================ */
+function winAnalysis() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const mm = Math.floor(elapsed / 60);
+  const ss = String(elapsed % 60).padStart(2, "0");
+  const firstTry = tries === 0;
+  const timeStr = mm > 0 ? `${mm} min ${ss} sec` : `${elapsed % 60} seconds`;
+  const lines = [
+    ["sys", "$ python analysis/subject_261.py"],
+    ["",    ""],
+    ["",    `You solved it in ${timeStr}, using ${actions} edits.`],
+    ["",    firstTry ? "You got it on your first try."
+                     : `You got it on try ${Math.min(tries + 1, 99)}.`],
+    ["",    "83.6% of your 260 participants solved this one on their first try."],
+    ["",    "Your final grid matched the solution exactly."],
+    ["",    ""],
+    ["log", "Verdict: ready to graduate (p < .001)"],
+  ];
+  const box = document.getElementById("stats");
+  box.innerHTML = "";
+  let i = 0;
+  (function add() {
+    if (i >= lines.length) { renderTrajectory(); return; }
+    const d = document.createElement("div");
+    if (lines[i][0]) d.className = lines[i][0];
+    d.textContent = lines[i][1];
+    box.appendChild(d);
+    i++;
+    setTimeout(add, reducedMotion ? 0 : 430);
+  })();
+}
+
+/* ============================================================
+   Her favorite figure, one more time — similarity to solution
+   over time, subject #261. Deliberately matplotlib.
+   ============================================================ */
+function renderTrajectory() {
+  if (TRAJ.length < 2) return;
+  const Wp = 460, Hp = 240, m = { l: 52, r: 16, t: 30, b: 40 };
+  const tMax = TRAJ[TRAJ.length - 1].t;
+  const sMin = Math.min(...TRAJ.map(p => p.s));
+  const y0 = Math.max(0, Math.floor((sMin - 0.02) * 10) / 10);
+  const X = t => m.l + (t / tMax) * (Wp - m.l - m.r);
+  const Y = s => m.t + (1 - (s - y0) / (1 - y0)) * (Hp - m.t - m.b);
+  const ink = "#262626", grey = "#8a8a8a";
+
+  let svg = `<svg class="plot" viewBox="0 0 ${Wp} ${Hp}" width="${Wp}" role="img" aria-label="Line chart: your similarity to the solution rising to 1.0 over time">`;
+  /* axes */
+  svg += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${Hp - m.b}" stroke="${ink}" stroke-width="1"/>`;
+  svg += `<line x1="${m.l}" y1="${Hp - m.b}" x2="${Wp - m.r}" y2="${Hp - m.b}" stroke="${ink}" stroke-width="1"/>`;
+  /* y ticks */
+  for (let s = y0; s <= 1.001; s += 0.1) {
+    const y = Y(s);
+    svg += `<line x1="${m.l - 4}" y1="${y}" x2="${m.l}" y2="${y}" stroke="${ink}"/>`;
+    svg += `<text x="${m.l - 8}" y="${y + 3}" font-size="9" fill="${ink}" text-anchor="end" font-family="sans-serif">${s.toFixed(1)}</text>`;
+  }
+  /* x ticks */
+  [0, .25, .5, .75, 1].forEach(f => {
+    const x = X(tMax * f);
+    svg += `<line x1="${x}" y1="${Hp - m.b}" x2="${x}" y2="${Hp - m.b + 4}" stroke="${ink}"/>`;
+    svg += `<text x="${x}" y="${Hp - m.b + 15}" font-size="9" fill="${ink}" text-anchor="middle" font-family="sans-serif">${Math.round(tMax * f)}</text>`;
+  });
+  /* labels + title, like the paper's */
+  svg += `<text x="${(m.l + Wp - m.r) / 2}" y="${Hp - 8}" font-size="10" fill="${ink}" text-anchor="middle" font-family="sans-serif">Time (ms)</text>`;
+  svg += `<text x="12" y="${(m.t + Hp - m.b) / 2}" font-size="10" fill="${ink}" text-anchor="middle" font-family="sans-serif" transform="rotate(-90 12 ${(m.t + Hp - m.b) / 2})">Similarity to solution</text>`;
+  svg += `<text x="${(m.l + Wp - m.r) / 2}" y="${m.t - 12}" font-size="12" fill="${ink}" text-anchor="middle" font-family="sans-serif">Problem 1</text>`;
+  /* her line — matplotlib C0, of course */
+  const pts = TRAJ.map(p => `${X(p.t).toFixed(1)},${Y(p.s).toFixed(1)}`).join(" ");
+  svg += `<polyline points="${pts}" fill="none" stroke="#1f77b4" stroke-width="2" stroke-linejoin="round"/>`;
+  const last = TRAJ[TRAJ.length - 1];
+  svg += `<circle cx="${X(last.t)}" cy="${Y(last.s)}" r="4" fill="#1f77b4"/>`;
+  svg += `<text x="${X(last.t) - 8}" y="${Y(last.s) - 8}" font-size="9" fill="${grey}" text-anchor="end" font-family="sans-serif">you, again</text>`;
+  /* the replay cursor — matplotlib C1, riding the line */
+  svg += `<circle id="trajDot" r="5" fill="#ff7f0e" stroke="#fff" stroke-width="1.5" style="display:none"/>`;
+  svg += `</svg>`;
+
+  const fig = document.getElementById("trajFig");
+  fig.innerHTML = svg + `<figcaption>fig. ∞ — trajectory of subject #261 · cf. time_series/problem1.png</figcaption>`;
+  PLOT = { X, Y };
+  document.getElementById("replayRow").classList.add("show");
+  startReplay();
+}
+
+/* ============================================================
+   Replay — her saved clicks, played back in order, while the
+   orange cursor rides her trajectory on the figure.
+   ============================================================ */
+let PLOT = null, replayTimers = [];
+function startReplay() {
+  const rg = document.getElementById("replayGrid");
+  const meta = document.getElementById("replayMeta");
+  const edits = TRAJ.filter(e => e.type && e.type !== "start").length;
+  if (reducedMotion) {
+    drawGrid(rg, ANS || answer());
+    meta.textContent = `${edits} edits, ${(TRAJ[TRAJ.length - 1].t / 1000).toFixed(0)} s`;
+    return;
+  }
+  const tMax = TRAJ[TRAJ.length - 1].t || 1;
+  const DUR = 6000, PAUSE = 1600;
+  const dot = () => document.getElementById("trajDot");
+  let state;
+  const apply = ev => {
+    if (ev.type === "paint") {
+      state[ev.y][ev.x] = ev.v;
+      rg.children[ev.y * W + ev.x].className = "cell c" + ev.v;
+    } else if (ev.type === "copy") {
+      state = TEST_INPUT.map(r => r.slice());
+      drawGrid(rg, state);
+    } else if (ev.type === "reset") {
+      state = Array.from({ length: H }, () => Array(W).fill(0));
+      drawGrid(rg, state);
+    }
+  };
+  (function run() {
+    replayTimers.forEach(clearTimeout);
+    replayTimers = [];
+    state = Array.from({ length: H }, () => Array(W).fill(0));
+    drawGrid(rg, state);
+    let n = 0;
+    TRAJ.forEach(ev => {
+      replayTimers.push(setTimeout(() => {
+        apply(ev);
+        if (ev.type && ev.type !== "start") n++;
+        const d = dot();
+        if (d && PLOT) {
+          d.style.display = "";
+          d.setAttribute("cx", PLOT.X(ev.t).toFixed(1));
+          d.setAttribute("cy", PLOT.Y(ev.s).toFixed(1));
+        }
+        meta.textContent = `t = ${(ev.t / 1000).toFixed(1)} s · edit ${n} of ${edits}`;
+      }, (ev.t / tMax) * DUR));
+    });
+    replayTimers.push(setTimeout(run, DUR + PAUSE));
+  })();
+}
+
+/* ============================================================
+   Fireworks — square particles only. This is ARC country.
+   ============================================================ */
+const fx = document.getElementById("fx");
+const ctx = fx.getContext("2d");
+let particles = [], fxRunning = false;
+
+function sizeFx() { fx.width = innerWidth * devicePixelRatio; fx.height = innerHeight * devicePixelRatio; }
+addEventListener("resize", sizeFx); sizeFx();
+
+function burst(x, y) {
+  const kind = Math.random();
+  const px = 5 * devicePixelRatio;
+  if (kind < 0.35) {
+    /* red core, yellow diagonal sparks — the red rule */
+    spawn(x, y, "#FF4136", 1, 0);
+    for (const [dx, dy] of [[-1,-1],[1,-1],[-1,1],[1,1]])
+      for (let i = 1; i <= 10; i++) spawn(x, y, "#FFDC00", 2.2, Math.atan2(dy, dx) + (Math.random() - .5) * .28);
+  } else if (kind < 0.7) {
+    /* blue core, orange plus — the blue rule */
+    spawn(x, y, "#0074D9", 1, 0);
+    for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]])
+      for (let i = 1; i <= 10; i++) spawn(x, y, "#FF851B", 2.2, Math.atan2(dy, dx) + (Math.random() - .5) * .28);
+  } else {
+    /* full-palette confetti burst */
+    for (let i = 0; i < 46; i++)
+      spawn(x, y, ARC_COLORS[1 + Math.floor(Math.random() * 8)], 1.6 + Math.random() * 1.6, Math.random() * Math.PI * 2);
+  }
+}
+function spawn(x, y, color, speed, angle) {
+  const s = speed * (2.2 + Math.random() * 2.4) * devicePixelRatio;
+  particles.push({ x, y, vx: Math.cos(angle) * s, vy: Math.sin(angle) * s,
+    color, life: 1, decay: .008 + Math.random() * .012,
+    size: (3 + Math.random() * 4) * devicePixelRatio });
+}
+function fireworks(duration) {
+  fxRunning = true;
+  const launcher = setInterval(() => {
+    burst(fx.width * (0.12 + Math.random() * 0.76), fx.height * (0.12 + Math.random() * 0.5));
+  }, 340);
+  burst(fx.width * .5, fx.height * .35);
+  setTimeout(() => clearInterval(launcher), duration);
+  requestAnimationFrame(tick);
+}
+function tick() {
+  ctx.clearRect(0, 0, fx.width, fx.height);
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.045 * devicePixelRatio;
+    p.vx *= .985; p.vy *= .985;
+    p.life -= p.decay;
+    ctx.globalAlpha = Math.max(p.life, 0);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+  if (particles.length) requestAnimationFrame(tick);
+  else fxRunning = false;
+}
+</script>
+
+</body>
+</html>
