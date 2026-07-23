@@ -525,7 +525,7 @@
     You made this task. You got <strong>260 people</strong> to sit exactly where
     you're sitting now, and you tracked every click they made.
     Now that you've defended, the task interface would like one final word
-    with <strong>subject&nbsp;#261</strong>.
+    with <strong>participant&nbsp;#261</strong>.
   </p>
   <p class="rules">
     infer the rule from the examples · construct the output grid<br>
@@ -1183,8 +1183,8 @@ function deploySequence() {
       counter.textContent = n + "/260";
       if (n >= 260) {
         clearInterval(iv);
-        termAppend("log", "\n✓ all 260 subjects complete — data collected, analyses run, paper written");
-        termAppend("sys", "\n\nwaiting for subject #261 ");
+        termAppend("log", "\n✓ all 260 participants complete — data collected, analyses run, paper written");
+        termAppend("sys", "\n\nwaiting for participant #261 ");
         termAppend("caret", "");
         termAppend("", "\n");
         const b = document.createElement("button");
@@ -1254,7 +1254,7 @@ function winAnalysis() {
   const firstTry = tries === 0;
   const timeStr = mm > 0 ? `${mm} min ${ss} sec` : `${elapsed % 60} seconds`;
   const lines = [
-    ["sys", "$ python analysis/subject_261.py"],
+    ["sys", "$ python analysis/participant_261.py"],
     ["",    ""],
     ["",    `You solved it in ${timeStr}, using ${actions} edits.`],
     ["",    firstTry ? "You got it on your first try."
@@ -1280,7 +1280,7 @@ function winAnalysis() {
 
 /* ============================================================
    Her favorite figure, one more time — similarity to solution
-   over time, subject #261. Deliberately matplotlib.
+   over time, participant #261. Deliberately matplotlib.
    ============================================================ */
 function renderTrajectory() {
   if (TRAJ.length < 2) return;
@@ -1323,7 +1323,7 @@ function renderTrajectory() {
   svg += `</svg>`;
 
   const fig = document.getElementById("trajFig");
-  fig.innerHTML = svg + `<figcaption>fig. ∞ — trajectory of subject #261 · cf. time_series/problem1.png</figcaption>`;
+  fig.innerHTML = svg + `<figcaption>fig. ∞ — trajectory of participant #261 · cf. time_series/problem1.png</figcaption>`;
   PLOT = { X, Y };
   document.getElementById("replayRow").classList.add("show");
   startReplay();
