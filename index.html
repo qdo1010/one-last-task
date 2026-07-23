@@ -354,7 +354,7 @@
 
   /* palette + tools */
   .toolbelt { display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 4px; }
-  .palette { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .palette { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
   .swatch {
     width: 34px; height: 34px;
     border: 1px solid var(--line);
@@ -442,7 +442,8 @@
     background: #fff;
     border-radius: 4px;
     padding: 6px;
-    max-width: 92vw;
+    max-width: min(460px, 92vw);
+    height: auto;
   }
   #win .fig figcaption {
     font-family: var(--mono);
@@ -490,6 +491,23 @@
     height: 100%;
     pointer-events: none;
     z-index: 50;
+  }
+
+  /* ============ phones ============ */
+  @media (max-width: 520px) {
+    .scene { padding: 26px 12px 48px; }
+    #intro .lede { font-size: 15px; }
+    #build .lede { font-size: 13.5px; }
+    .ex-card { min-width: 170px; padding: 10px; }
+    .arch .tier { padding: 6px 10px; }
+    .arch .tier .t-name { font-size: 10px; }
+    .hud { font-size: 10.5px; }
+    #term { height: 190px; font-size: 11px; }
+    .replay-card { padding: 12px; }
+    #win .stats { font-size: 11px; padding: 12px 14px; }
+    .swatch { width: 30px; height: 30px; }
+    .work { gap: 8px; }
+    .work .grid { --cs: min(34px, calc((100vw - 96px) / 18)) !important; }
   }
 </style>
 
